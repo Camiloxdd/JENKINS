@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         APP_NAME = 'crud-app'
-        DOCKER_REGISTRY = 'registry.example.com'
         IMAGE_BACKEND = "${APP_NAME}-backend:${BUILD_NUMBER}"
         IMAGE_FRONTEND = "${APP_NAME}-frontend:${BUILD_NUMBER}"
     }
@@ -19,8 +18,15 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
-                        docker build -t ${APP_NAME}-backend-test -f Dockerfile .
+                        docker build -t ${APP_NAME}-backend-test \
+                            --target test \
+                            -f Dockerfile .
                     '''
+                }
+            }
+            post {
+                always {
+                    echo "Backend tests completados"
                 }
             }
         }
@@ -29,13 +35,22 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
-                        docker build -t ${APP_NAME}-frontend-test -f Dockerfile .
+                        docker run --rm \
+                            -v "$(pwd):/app" \
+                            -w /app \
+                            node:20-alpine \
+                            sh -c "npm ci && npm test"
                     '''
+                }
+            }
+            post {
+                always {
+                    echo "Frontend tests completados"
                 }
             }
         }
 
-        stage('Build Backend') {
+        stage('Build Backend Image') {
             steps {
                 dir('backend') {
                     sh "docker build -t ${IMAGE_BACKEND} ."
@@ -43,7 +58,7 @@ pipeline {
             }
         }
 
-        stage('Build Frontend') {
+        stage('Build Frontend Image') {
             steps {
                 dir('frontend') {
                     sh "docker build -t ${IMAGE_FRONTEND} ."
@@ -56,14 +71,12 @@ pipeline {
                 branch 'main'
             }
             steps {
-                input message: 'Deploy a produccion?'
+                input message: 'Deploy a produccion?', ok: 'Deploy'
                 sh '''
-                    docker stop ${APP_NAME}-backend 2>/dev/null || true
-                    docker stop ${APP_NAME}-frontend 2>/dev/null || true
-                    docker rm ${APP_NAME}-backend 2>/dev/null || true
-                    docker rm ${APP_NAME}-frontend 2>/dev/null || true
-
-                    docker-compose up -d
+                    cd ~/JENKINS
+                    git pull
+                    docker-compose down
+                    docker-compose up -d --build
                 '''
             }
         }
