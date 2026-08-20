@@ -33,9 +33,10 @@ services:
       - backend
 
   frontend:
-    build: ./frontend
-    environment:
-      NEXT_PUBLIC_API_URL: "http://34.134.171.228:8000"
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: "http://34.134.171.228:8000"
     ports:
       - "3000:3000"
     depends_on:
