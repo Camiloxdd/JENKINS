@@ -60,7 +60,7 @@ describe('API Products', () => {
   test('list sends GET with token', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => [{ id: 1, name: 'Product A' }]),
+      json: async () => [{ id: 1, name: 'Product A' }],
     });
 
     const result = await products.list('my-token');
