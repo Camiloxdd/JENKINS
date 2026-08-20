@@ -1,0 +1,11 @@
+frontend/node_modules/
+vendor/
+.env.local
+.env
+.next/
+dist/
+build/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
