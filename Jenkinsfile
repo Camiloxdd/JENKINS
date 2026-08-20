@@ -80,11 +80,7 @@ pipeline {
         }
 
         stage('Deploy') {
-            when {
-                branch 'main'
-            }
             steps {
-                input message: 'Deploy a produccion?', ok: 'Deploy'
                 sh """
                     cd ~/JENKINS
                     git pull
