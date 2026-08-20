@@ -82,10 +82,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                    cd /home/entrepanesbussines/JENKINS
-                    git pull
-                    docker-compose down
-                    docker-compose up -d --build
+                    sudo mkdir -p /opt/deploy
+                    sudo cp -r . /opt/deploy/
+                    cd /opt/deploy
+                    sudo docker-compose down
+                    sudo docker-compose up -d --build
                 """
             }
         }
