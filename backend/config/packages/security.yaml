@@ -22,7 +22,6 @@ security:
             custom_authenticator: App\Security\JwtAuthenticator
             logout:
                 path: api_logout
-                stateless: true
             entry_point: App\Security\JwtAuthenticator
 
         api:
