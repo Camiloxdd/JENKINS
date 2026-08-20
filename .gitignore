@@ -1,7 +1,9 @@
 frontend/node_modules/
+**/node_modules/
 vendor/
 .env.local
 .env
+*.env
 .next/
 dist/
 build/
