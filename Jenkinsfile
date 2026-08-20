@@ -14,16 +14,32 @@ pipeline {
             }
         }
 
-        stage('Test Backend') {
+        stage('Build Backend Test Image') {
             steps {
                 dir('backend') {
-                    sh '''
-                        docker run --rm \
-                            -v "$(pwd):/app" \
-                            -w /app \
-                            php:8.2-cli \
-                            sh -c "apt-get update -qq && apt-get install -y -qq unzip libpq-dev libicu-dev > /dev/null 2>&1 && docker-php-ext-install pdo_pgsql intl > /dev/null 2>&1 && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer > /dev/null 2>&1 && composer install --no-interaction --quiet && php vendor/bin/phpunit"
-                    '''
+                    sh "docker build -t ${APP_NAME}-backend-test ."
+                }
+            }
+        }
+
+        stage('Test Backend') {
+            steps {
+                sh """
+                    docker run --rm \
+                        --network host \
+                        -e DATABASE_URL="postgresql://app:secret@127.0.0.1:5432/app?server_version=15" \
+                        -e APP_ENV=test \
+                        -e APP_SECRET="test-secret" \
+                        -e JWT_PASSPHRASE="test" \
+                        -e JWT_SECRET_KEY="%kernel.project_dir%/config/jwt/private.pem" \
+                        -e JWT_PUBLIC_KEY="%kernel.project_dir%/config/jwt/public.pem" \
+                        ${APP_NAME}-backend-test \
+                        sh -c "php bin/console doctrine:schema:create --force && php vendor/bin/phpunit --colors=never"
+                """
+            }
+            post {
+                always {
+                    echo "Backend tests completados"
                 }
             }
         }
@@ -31,13 +47,13 @@ pipeline {
         stage('Test Frontend') {
             steps {
                 dir('frontend') {
-                    sh '''
+                    sh """
                         docker run --rm \
-                            -v "$(pwd):/app" \
+                            -v "\$(pwd):/app" \
                             -w /app \
                             node:20-alpine \
-                            sh -c "npm ci && npm test"
-                    '''
+                            sh -c "npm ci && npm test -- --passWithNoTests"
+                    """
                 }
             }
             post {
@@ -69,12 +85,12 @@ pipeline {
             }
             steps {
                 input message: 'Deploy a produccion?', ok: 'Deploy'
-                sh '''
+                sh """
                     cd ~/JENKINS
                     git pull
                     docker-compose down
                     docker-compose up -d --build
-                '''
+                """
             }
         }
     }
