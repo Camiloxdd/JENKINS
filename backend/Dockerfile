@@ -15,7 +15,12 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts || true
 
 COPY . .
 
-RUN chown -R www-data:www-data /var/www
+RUN mkdir -p config/jwt && \
+    openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:4096 && \
+    openssl pkey -in config/jwt/private.pem -pubout -out config/jwt/public.pem
+
+RUN composer dump-autoload --optimize --no-dev && \
+    chown -R www-data:www-data /var/www
 
 EXPOSE 9000
 CMD ["php-fpm"]

@@ -3,7 +3,7 @@ frontend/node_modules/
 vendor/
 .env.local
 .env
-*.env
+config/jwt/
 .next/
 dist/
 build/
