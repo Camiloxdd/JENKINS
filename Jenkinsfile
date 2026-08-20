@@ -18,15 +18,12 @@ pipeline {
             steps {
                 dir('backend') {
                     sh '''
-                        docker build -t ${APP_NAME}-backend-test \
-                            --target test \
-                            -f Dockerfile .
+                        docker run --rm \
+                            -v "$(pwd):/app" \
+                            -w /app \
+                            php:8.2-cli \
+                            sh -c "apt-get update -qq && apt-get install -y -qq unzip libpq-dev libicu-dev > /dev/null 2>&1 && docker-php-ext-install pdo_pgsql intl > /dev/null 2>&1 && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer > /dev/null 2>&1 && composer install --no-interaction --quiet && php vendor/bin/phpunit"
                     '''
-                }
-            }
-            post {
-                always {
-                    echo "Backend tests completados"
                 }
             }
         }
