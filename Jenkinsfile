@@ -82,7 +82,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                    cd ~/JENKINS
+                    cd /home/entrepanesbussines/JENKINS
                     git pull
                     docker-compose down
                     docker-compose up -d --build
