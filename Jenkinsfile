@@ -82,8 +82,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                    docker-compose down
-                    docker-compose up -d --build
+                    docker-compose -p crud down --remove-orphans || true
+                    docker-compose -p crud up -d --build
                 """
             }
         }
