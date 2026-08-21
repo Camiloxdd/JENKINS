@@ -36,7 +36,7 @@ pipeline {
                         -e JWT_SECRET_KEY="%kernel.project_dir%/config/jwt/private.pem" \
                         -e JWT_PUBLIC_KEY="%kernel.project_dir%/config/jwt/public.pem" \
                         ${APP_NAME}-backend-test \
-                        sh -c "composer install --no-interaction && php bin/console doctrine:schema:create --no-interaction && php vendor/bin/phpunit --colors=never"
+                        sh -c "composer install --no-interaction --no-scripts && php bin/console doctrine:schema:create --no-interaction && php vendor/bin/phpunit --colors=never"
                 """
             }
             post {
