@@ -82,11 +82,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                    sudo mkdir -p /opt/deploy
-                    sudo cp -r . /opt/deploy/
-                    cd /opt/deploy
-                    sudo docker-compose down
-                    sudo docker-compose up -d --build
+                    docker-compose down
+                    docker-compose up -d --build
                 """
             }
         }
