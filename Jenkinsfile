@@ -24,6 +24,8 @@ pipeline {
 
         stage('Test Backend') {
             steps {
+                sh "docker run -d --name test-db -e POSTGRES_DB=app -e POSTGRES_USER=app -e POSTGRES_PASSWORD=secret -p 5432:5432 postgres:15-alpine"
+                sh "sleep 5"
                 sh """
                     docker run --rm \
                         --network host \
@@ -34,11 +36,12 @@ pipeline {
                         -e JWT_SECRET_KEY="%kernel.project_dir%/config/jwt/private.pem" \
                         -e JWT_PUBLIC_KEY="%kernel.project_dir%/config/jwt/public.pem" \
                         ${APP_NAME}-backend-test \
-                        sh -c "php bin/console doctrine:schema:update --force --no-interaction && composer install --no-scripts --no-interaction && php vendor/bin/phpunit --colors=never"
+                        sh -c "php bin/console doctrine:schema:create --no-interaction && php vendor/bin/phpunit --colors=never"
                 """
             }
             post {
                 always {
+                    sh "docker stop test-db 2>/dev/null; docker rm test-db 2>/dev/null; true"
                     echo "Backend tests completados"
                 }
             }
